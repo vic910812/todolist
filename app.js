@@ -3,6 +3,8 @@ const mongoose = require('mongoose')
 
 const exphbs = require('express-handlebars')
 
+const bodyParser = require('body-parser')
+
 const Todo = require('./models/todo')
 
 const app = express()
@@ -22,12 +24,32 @@ db.once('open', () => {
 app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
 
+app.use(bodyParser.urlencoded({ extended: true }))
+
 app.get('/', (req, res) => {
     //拿到全部的TODO資料
     Todo.find()
         .lean()
         .then(todos => res.render('index', { todos: todos }))
         .catch(error => console.error(error))
+})
+
+app.get('/todos/new', (req, res) => {
+    return res.render('new')
+})
+
+app.post('/todos', (req, res) => {
+    const name = req.body.name
+    // const todo = new Todo({
+    //     name: name
+    // })
+
+    // return todo.save()
+    //     .then(() => res.redirect('/'))
+    //     .catch(error => console.log(error))
+    return Todo.create({ name })
+       .then(() => res.redirect('/'))
+       .catch(error => console.log(error))
 })
 
 app.listen(3000, () => {
